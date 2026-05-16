@@ -15,6 +15,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - backend-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7
@@ -26,6 +31,11 @@ services:
       - redis_data:/data
     networks:
       - backend-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   spring-app:
     build:
@@ -34,8 +44,10 @@ services:
     container_name: spring-app
     restart: unless-stopped
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/app_db
       SPRING_DATASOURCE_USERNAME: app_user
@@ -45,6 +57,8 @@ services:
       SPRING_REDIS_PORT: 6379
 
       SPRING_PROFILES_ACTIVE: docker
+      # JWT secret used by TokenService; override in production with a secure value
+      JWT_SECRET: some-32-char-minimum-secret-value-CHANGE_ME
     ports:
       - "8080:8080"
     networks:
