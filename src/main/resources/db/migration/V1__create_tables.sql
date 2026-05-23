@@ -1,16 +1,21 @@
 -- V1__create_tables.sql
 -- Initial schema for AuthSystem RBAC entities
 
+-- Sequences (explicit for Hibernate JPA compatibility)
+CREATE SEQUENCE IF NOT EXISTS roles_seq START 1 INCREMENT 1;
+CREATE SEQUENCE IF NOT EXISTS permissions_seq START 1 INCREMENT 1;
+CREATE SEQUENCE IF NOT EXISTS audit_logs_seq START 1 INCREMENT 1;
+
 -- Roles
 CREATE TABLE IF NOT EXISTS roles (
-  id BIGSERIAL PRIMARY KEY,
+  id BIGINT PRIMARY KEY DEFAULT nextval('roles_seq'),
   name VARCHAR(50) NOT NULL UNIQUE,
   description VARCHAR(255)
 );
 
 -- Permissions
 CREATE TABLE IF NOT EXISTS permissions (
-  id BIGSERIAL PRIMARY KEY,
+  id BIGINT PRIMARY KEY DEFAULT nextval('permissions_seq'),
   name VARCHAR(100) NOT NULL UNIQUE,
   description VARCHAR(255)
 );
@@ -27,7 +32,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Audit logs
 CREATE TABLE IF NOT EXISTS audit_logs (
-  id BIGSERIAL PRIMARY KEY,
+  id BIGINT PRIMARY KEY DEFAULT nextval('audit_logs_seq'),
   user_id UUID NOT NULL,
   action VARCHAR(50) NOT NULL,
   ip_address VARCHAR(45),
